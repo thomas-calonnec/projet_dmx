@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Drag-and-Drop File Uploader</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div class="flex-main">
+           
+                <div id="drop-area">
+                    
+                    <div class="">
+                        <img src="./fleche-vers-le-bas.png" width="50">
+                    </div>
+                <div>
+                    <b>Glisser & Déposer vos fichiers ici</b>
+                    </div>
+                
+           </div>
+           <form 
+                action="upload.php"
+                method="post" 
+                enctype="multipart/form-data"> 
+              
+            <input type="file"  name="file" id="file" multiple hidden>
+            </form>
+            <div class="container">
+                <div class="file-list" id="file-list">
+                  
+                </div>
+                <div class="scrollbar">
+                    <div class="thumb" id="thumb"></div>
+                </div>
+            </div>
+            
+        </div>
+       
+          
+        <script>
+            const content = document.getElementById('file-list');
+            const thumb = document.getElementById('thumb');
+    
+            // Calcul et mise à jour de la taille du thumb
+            function updateThumb() {
+                const contentHeight = content.scrollHeight;
+                const containerHeight = content.clientHeight;
+                const thumbHeight = Math.max(containerHeight * (containerHeight / contentHeight), 30); // Minimum height of thumb
+                thumb.style.height = `${thumbHeight}px`;
+            }
+    
+            // Mise à jour initiale
+            updateThumb();
+    
+            // Gestion du défilement
+            content.addEventListener('scroll', () => {
+                const scrollTop = content.scrollTop;
+                const contentHeight = content.scrollHeight;
+                const containerHeight = content.clientHeight;
+                const thumbHeight = thumb.offsetHeight;
+                const maxScrollTop = contentHeight - containerHeight;
+                const thumbTop = (scrollTop / maxScrollTop) * (containerHeight - thumbHeight);
+                thumb.style.top = `${thumbTop}px`;
+            });
+    
+            // Gestion du déplacement du thumb
+            let isDragging = false;
+            let startY;
+    
+            thumb.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startY = e.clientY;
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+    
+            function onMouseMove(e) {
+                if (!isDragging) return;
+                const deltaY = e.clientY - startY;
+                const containerHeight = content.clientHeight;
+                const thumbHeight = thumb.offsetHeight;
+                let newTop = thumb.offsetTop + deltaY;
+                newTop = Math.max(0, Math.min(newTop, containerHeight - thumbHeight));
+                thumb.style.top = `${newTop}px`;
+                const maxScrollTop = content.scrollHeight - containerHeight;
+                content.scrollTop = (newTop / (containerHeight - thumbHeight)) * maxScrollTop;
+                startY = e.clientY;
+            }
+    
+            function onMouseUp() {
+                isDragging = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+        </script>
+        <script src="uploadFile.js"></script>
+    </body>
+</html>
